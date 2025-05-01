@@ -2,13 +2,13 @@
   "name": "awdiz-backend",
   "version": "1.0.0",
   "description": "Awdiz Backend",
-  "homepage": "https://github.com/DakhaniUsman/awdiz-backend#readme",
+  "homepage": "https://github.com/Karishma2422#readme",
   "bugs": {
-    "url": "https://github.com/DakhaniUsman/awdiz-backend/issues"
+    "url": "https://github.com/Karishma2422/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/DakhaniUsman/awdiz-backend.git"
+    "url": "https://github.com/Karishma2422.git"
   },
   "scripts": {
     "start": "nodemon index.js",

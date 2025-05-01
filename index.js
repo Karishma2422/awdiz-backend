@@ -20,7 +20,6 @@ dotenv.config();
 
 app.use("/api/v1", AllRoutes)
 
-mongoose.connect(process.env.MONGODBURL).then(() => { console.log("Mongo DB Connected") })
 
 app.get("/", (req, res) => {
   res.send("Welcome to Express Server 0_0 ");
@@ -44,9 +43,6 @@ app.get("/greet", (req, res) => {
   res.send("Welcome!")
 })
 
-app.post("/register", Register);
-app.post("/products", Product);
-app.post("/login", Login);
 
 app.get("/hello", (req, res) => {
   res.send("Welcome to Aincrad")
