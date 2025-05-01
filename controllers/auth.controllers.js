@@ -1,18 +1,20 @@
 import User from "../models/user.schema.js";
+import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken"
 
 export const Register = async(req, res) => {
     // console.log(req.body);
 
     try {
-        const { name, email, password, confirmPassword } = req.body;
-        // console.log(name, email, password, confirmPassword);
+        const { name, email, password, confirmPassword } = req.body.user;
+        console.log(name, email, password, confirmPassword);
 
         if (!name || !email || !password || !confirmPassword) {
-            return res.send("All fields are mandatory...")
+            return res.json({success : false, message : "All fields are mandatory!"})
         }
 
         if (password !== confirmPassword) {
-            return res.send("Password did not matched -_-")
+            return res.json({success : false, message : "Password did not matched -_-"})
         }
 
         // const isEmailExist = await User.find({email : email})
@@ -34,15 +36,19 @@ export const Register = async(req, res) => {
         // }
 
         if (isEmailExist){
-            return res.send("Email already exist *_*")
+            return res.json({success : false , message : "Email already exist *_*"})
         }
+
+        const hashedPassword = await bcrypt.hash(password,10);
+        console.log(hashedPassword,"hashedPassword");
+
+        const hasshedConfirmPassword = await    bcrypt.hash(confirmPassword,10);
+        console.log(hasshedConfirmPassword,"hasshedConfirmPassword");
 
         const newUser = User({
             name : name,
             email : email,
-            password : password,
-            confirmPassword : confirmPassword,
-            time : Date.now()
+            password : hashedPassword,
         });
 
         // yaha pe humne model schem ko use kiya hia har new user ko track krne ke liye
@@ -52,20 +58,81 @@ export const Register = async(req, res) => {
         // this is mongoose features or mongoDB querry used to save data in database since it maybe time consuming so use await at every querry
 
         console.log(responseFromMongoDB, "responseFromMongoDB")
-        res.json({ "succes": true, "message": "Registration Completed!" });
+        return res.json({ success: true, message: "Registration Completed!" });
 
     } catch (error) {
-        res.send(error, "error while regster api :");
-        res.send(error)
+        res.json({success:false, message : error});
     }
 
 }
 
-export const Login = (req, res) => {
+export const Login = async(req, res) => {
     try {
-        return res.send("Login Successfull!")
+        const {email, password} = req.body.userData;
+
+        if (!email || !password){
+            return res.json({success: false , message : "All fields are required"})
+        }
+        console.log(email,"email",password,"password")
+
+
+        const isEmailExist = await User.findOne({email : email});
+
+        if(isEmailExist){
+        console.log(isEmailExist.password,"isEmailExist.password", password,"password");
+        const isPasswordCorrect = await bcrypt.compare(password,isEmailExist.password);
+        console.log(isPasswordCorrect,"isPasswordCorrect");
+
+        const jwtToken = jwt.sign({ userId : isEmailExist._id} , process.env.SECRETKEY)
+        console.log(jwtToken,"jwtToken")
+
+        if(isPasswordCorrect){
+            return res.json({success : true , message : "Login Successfull!", userData : { name : isEmailExist.name }, token : jwtToken })
+        }else {
+            return res.json({success  : false , message : "Password not matched"})
+        }
+        } else{
+            return res.json({success : false , message : "Kindly register"})
+        }
+
     } catch (error) {
-        res.send("error while login api :", error)
+        res.json({success : false , message : error.data.message})
     }
 
+}
+
+export const GetCurrentUser = async(req,res) => {
+    try {
+        const token = req.body.token;
+        console.log(token,"token")
+
+        if(!token){
+            return res.json({success : false , message : "Token Not Found!"})
+        }
+        
+
+        const tokenData = jwt.verify(token,process.env.SECRETKEY)
+        console.log(tokenData,"tokenData")
+
+
+        if(!tokenData){
+            return res.json({success : false , message : "Token Data Not Found!"})
+        }
+        const isUserExist = await User.findById(tokenData.userId);
+        console.log(isUserExist,"isUserExist")
+
+        const jwtToken = jwt.sign({ userId : isUserExist._id} , process.env.SECRETKEY)
+
+
+        if(isUserExist){
+            return res.json({success : true , message : "Welcome User!", userData : { name : isUserExist.name }, token : jwtToken })
+        } else {
+            return res.json({success : false , message : "User Not Found!"})
+
+        }
+    } catch (error) {
+        console.log(error,"error")
+        res.json({success : false , message : error})
+        
+    }
 }

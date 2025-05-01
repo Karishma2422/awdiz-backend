@@ -5,6 +5,7 @@ import AllRoutes from "./routes/index.js";
 import morgan from "morgan";
 import mongoose from "mongoose";
 import dotenv from "dotenv"
+import cors from "cors"
 
 console.log("Hello from Index");
 
@@ -17,9 +18,16 @@ const app = express();
 app.use(express.json())
 app.use(morgan("combined"))
 dotenv.config();
+app.use(cors())
 
 app.use("/api/v1", AllRoutes)
 
+// <<<<<<< HEAD
+// =======
+// const connectionDB = async()=> {
+// await mongoose.connect(process.env.MONGODBURL).then(() => { console.log("Mongo DB Connected") })
+// }
+// >>>>>>> eecb95d926a9abdea21daf3248f7eda5f0baf390
 
 app.get("/", (req, res) => {
   res.send("Welcome to Express Server 0_0 ");
@@ -27,7 +35,7 @@ app.get("/", (req, res) => {
 app.get("/books", (req, res) => {
   console.log("Inside Books!")
   res.send(`${books.map((book) => (
-    `${book.id}. ${book.name} by ${book.author}`
+    `${book.id}. ${book.name} by ${book.author}` 
   ))}`)
 });
 
@@ -59,6 +67,7 @@ app.use((req, res) => {
 
 const backendPort = 8000;
 
-app.listen(backendPort, () => {
+app.listen(backendPort, async() => {
+  await connectionDB();
   console.log(`Server is running on port ${backendPort}`);
 });
